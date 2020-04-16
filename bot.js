@@ -42,22 +42,35 @@ const bot = async () => {
   }
 
   const beginVoting = () => {
-    const first = suggestions.shift()
-    const last = suggestions.pop()
-    const randomIndex = Math.floor(Math.random() * suggestions.length) + 1;
-    const random = suggestions[randomIndex]
-    first['votes'] = 0;
-    random['votes'] = 0;
-    last['votes'] = 0;
-    votes = [first,random,last]
-    console.log(votes)
-    client.say(target, "⚠️ Time to vote! Pick your favorite suggestion by typing '!vote #', e.g. '!vote 2'.");
-    client.say(target, `1 : ${first.description} (${first.user})`);
-    client.say(target, `2 : ${random.description} (${random.user})`);
-    client.say(target, `3 : ${last.description} (${last.user})`);
+    console.log("Starting voting...")
+
+    switch (suggestions.length) {
+      case 0:
+        client.say(target, "I didn't get any suggestions. You can't think of ANYTHING you'd like Wyatt to do?!")
+        break;
+      case 1:
+        const first = suggestions.shift()
+        client.say(target, `I only heard one suggestion: ${first.description} (from ${first.user})`);;
+        break;
+      default:
+        first = suggestions.shift()
+        const last = suggestions.pop()
+        first['votes'] = 0;
+        last['votes'] = 0;
+        votes = [first, last]
+        if (suggestions.length) {
+          const randomIndex = Math.floor(Math.random() * suggestions.length)
+          const random = suggestions[randomIndex]
+          random['votes'] = 0;
+          votes.push(random)
+        }
+        console.log("votes", votes)
+        client.say(target, "⚠️ Time to vote! Pick your favorite suggestion by typing '!vote #', e.g. '!vote 2'.");
+        client.say(target, `1 : ${first.description} (${first.user})`);
+        client.say(target, `2 : ${random.description} (${random.user})`);
+        client.say(target, `3 : ${last.description} (${last.user})`);
+    }
   }
-
-
 
   // Called every time a message comes in
   function onMessageHandler(target, context, msg, self) {
@@ -76,14 +89,14 @@ const bot = async () => {
       case '!suggest':
         const suggestion = {}
         const user = context['display-name']
-        suggestion[user] = user
-        suggestion[description] = description
+        suggestion['user'] = user
+        suggestion['description'] = description
         suggestions.push(suggestion)
         // client.say(target, `Current suggestions: ${suggestions}.`);
         console.log(suggestions)
         break;
       default: 
-      console.log(`* Unknown command ${commandName}`);
+        console.log(`* Unknown command ${command}`);
     }
 
 
@@ -93,7 +106,12 @@ const bot = async () => {
     console.log(`* Connected to ${addr}:${port}`);
   }
 
-  const beginRoundTimer = setInterval(beginRound, 10000)
+  // Set timers for gameplay. Start a new round every 30s.
+  beginRound()
+  const beginRoundTimer = setInterval(beginRound, 30000)
+  const beginVoteTimer = setTimeout(function() {
+    setInterval(beginVoting, 30000)
+  }, 10000)
 }
 
 const playmemc = bot();
