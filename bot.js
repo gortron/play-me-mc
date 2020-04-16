@@ -37,39 +37,58 @@ const bot = async () => {
 
   const beginRound = () => {
     console.log("Starting new round...")
-    suggestions = [];
-    client.say(target, "⚠️ New round! Enter suggestions by typing '!suggest' at the beginning of your message. You've got 10s. Players will get to vote between the first suggestion, the last suggestion, and a random suggestion.     ");
+    try {
+      suggestions = [];
+      client.say(target, "⚠️ New round! Enter suggestions by typing '!suggest' at the beginning of your message. You've got 10s. Players will get to vote between the first suggestion, the last suggestion, and a random suggestion.     ")
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   const beginVoting = () => {
     console.log("Starting voting...")
+    let first = null;
+    let last = null;
+    let random = null;
 
     switch (suggestions.length) {
       case 0:
         client.say(target, "I didn't get any suggestions. You can't think of ANYTHING you'd like Wyatt to do?!")
         break;
       case 1:
-        const first = suggestions.shift()
+        first = suggestions.shift()
         client.say(target, `I only heard one suggestion: ${first.description} (from ${first.user})`);;
         break;
       default:
         first = suggestions.shift()
-        const last = suggestions.pop()
+        last = suggestions.pop()
         first['votes'] = 0;
         last['votes'] = 0;
         votes = [first, last]
         if (suggestions.length) {
           const randomIndex = Math.floor(Math.random() * suggestions.length)
-          const random = suggestions[randomIndex]
+          random = suggestions[randomIndex]
           random['votes'] = 0;
           votes.push(random)
         }
         console.log("votes", votes)
-        client.say(target, "⚠️ Time to vote! Pick your favorite suggestion by typing '!vote #', e.g. '!vote 2'.");
-        client.say(target, `1 : ${first.description} (${first.user})`);
-        client.say(target, `2 : ${random.description} (${random.user})`);
-        client.say(target, `3 : ${last.description} (${last.user})`);
+        let message = "⚠️ Time to vote! Pick your favorite suggestion by typing '!vote #', e.g. '!vote 2'.    "
+        message += `    1 : ${first.description} (${first.user})    `
+        message += `    2 : ${last.description} (${last.user})    `
+        if (random) message += `    3 : ${random.description} (${random.user})    `
+        client.say(target, message);
+        // client.say(target, `1 : ${first.description} (${first.user})`);
+        // if (random) client.say(target, `2 : ${random.description} (${random.user})`);
+        // client.say(target, `3 : ${last.description} (${last.user})`);
     }
+  }
+
+  const endAndRankVotes = () => {
+    console.log("Tallying votes...")
+    votes.sort((a, b) => (a.votes < b.votes) ? 1 : -1)
+    let message = "⚠️ Voting time is up! The people choose: "
+    message += `${votes[0].description} (${votes[0].votes} votes)`
+    client.say(target, message)
   }
 
   // Called every time a message comes in
@@ -84,16 +103,22 @@ const bot = async () => {
 
     // Remove whitespace from chat message
     const command = msg.trim().split(" ")[0]
-    const description = msg.trim().split(" ").splice(1).join(" ")
+    const content = msg.trim().split(" ").splice(1).join(" ")
     switch (command) {
       case '!suggest':
         const suggestion = {}
         const user = context['display-name']
         suggestion['user'] = user
-        suggestion['description'] = description
+        suggestion['description'] = content
         suggestions.push(suggestion)
-        // client.say(target, `Current suggestions: ${suggestions}.`);
+        client.whisper(user, `Got it! Thanks ${user}`)
         console.log(suggestions)
+        break;
+      case '!vote':
+        if (content === '1') votes[0].votes += 1;
+        if (content === '2') votes[1].votes += 1;
+        if (content === '3') votes[2].votes += 1;
+        console.log(votes)
         break;
       default: 
         console.log(`* Unknown command ${command}`);
@@ -112,6 +137,9 @@ const bot = async () => {
   const beginVoteTimer = setTimeout(function() {
     setInterval(beginVoting, 30000)
   }, 10000)
+  const beginRankTimer = setTimeout(function() {
+    setInterval(endAndRankVotes, 30000)
+  }, 20000)
 }
 
 const playmemc = bot();
