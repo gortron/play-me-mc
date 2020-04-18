@@ -7,6 +7,8 @@ const tmi = require("tmi.js");
 2. First 10s, it prompts users and listens for suggestions (store in array or obj)
 3. Next 10s, it presents users w/ 3 options and listens for votes (clear prev array, make new obj)
 4. Present users w/ ranked activities
+
+Start rounds manually, not on timer.
 */
 
 const bot = async () => {
