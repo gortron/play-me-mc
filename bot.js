@@ -2,15 +2,6 @@ require('dotenv').config()
 
 const tmi = require("tmi.js");
 
-/* SPECS 
-1. Bot runs on a 30s gameplay loop
-2. First 10s, it prompts users and listens for suggestions (store in array or obj)
-3. Next 10s, it presents users w/ 3 options and listens for votes (clear prev array, make new obj)
-4. Present users w/ ranked activities
-
-Start rounds manually, not on timer.
-*/
-
 const bot = async () => {
   // Define configuration options
   const opts = {
@@ -145,22 +136,3 @@ const bot = async () => {
 }
 
 const playmemc = bot();
-
-
-    // If the command is known, let's execute it
-    // if (commandName === "!d20") {
-    //   const num = rollDice(commandName);
-    //   client.say(
-    //     target,
-    //     `You rolled a ${num}. Link: https://glitch.com/~twitch-chatbot`
-    //   );
-    //   console.log(`* Executed ${commandName} command`);
-    // } else {
-    //   console.log(`* Unknown command ${commandName}`);
-    // }
-
-      // function rollDice() {
-  //   const sides = 20;
-  //   return Math.floor(Math.random() * sides) + 1;
-  // }
-  
