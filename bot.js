@@ -32,7 +32,8 @@ const bot = async () => {
     console.log("Starting new round...")
     try {
       suggestions = [];
-      client.say(target, "⚠️ New round! Enter suggestions by typing '!suggest' at the beginning of your message. You've got 10s. Players will get to vote between the first suggestion, the last suggestion, and a random suggestion.     ")
+      // client.say(target, "⚠️ New round! Enter suggestions by typing '!suggest' at the beginning of your message. You've got 10s. Players will get to vote between the first suggestion, the last suggestion, and a random suggestion.     ")
+      client.say(target, "✏️ PLAY. Suggest Wyatt's next action by typing '!go' first.")
     } catch (error) {
       console.log(error)
     }
@@ -56,33 +57,51 @@ const bot = async () => {
         first = suggestions.shift()
         last = suggestions.pop()
         first['votes'] = 0;
+        first['position'] = 1;
         last['votes'] = 0;
+        last['position'] = 3;
         votes = [first, last]
         if (suggestions.length) {
           const randomIndex = Math.floor(Math.random() * suggestions.length)
           random = suggestions[randomIndex]
           random['votes'] = 0;
+          random['position'] = 2;
           votes.push(random)
         }
         console.log("votes", votes)
-        let message = "⚠️ Time to vote! Pick your favorite suggestion by typing '!vote #', e.g. '!vote 2'.    "
-        message += `    1 : ${first.description} (${first.user})    `
-        message += `    2 : ${last.description} (${last.user})    `
-        if (random) message += `    3 : ${random.description} (${random.user})    `
+
+        let message = "✅ VOTE. Choose which action you want Wyatt to do by typing '!do' then the number."
+        message += `----1️⃣: ${first.description}`
+        message += `    2️⃣: ${last.description}`
+        if (random) message += `    3️⃣: ${random.description}`
         client.say(target, message);
-        // client.say(target, `1 : ${first.description} (${first.user})`);
-        // if (random) client.say(target, `2 : ${random.description} (${random.user})`);
-        // client.say(target, `3 : ${last.description} (${last.user})`);
+        suggestions = [];
+        
+        // client.say(target, message)
+        // setTimeout(function() {
+        //   `1️⃣ : ${first.description}`
+        // }, 250)
+        // setTimeout(function() {
+        //   `2️⃣ : ${last.description}`
+        // }, 500)
+        // if (random) setTimeout(function() {
+        //   `3️⃣ : ${random.description}`
+        // }, 750)
+        // suggestions = [];
     }
   }
 
   const endAndRankVotes = () => {
     console.log("Tallying votes...")
     votes.sort((a, b) => (a.votes < b.votes) ? 1 : -1)
-    let message = "⚠️ Voting time is up! The people choose: "
-    message += `${votes[0].description} (${votes[0].votes} votes)`
+    // let message = "⚠️ Voting time is up! The people choose: "
+    let message = "👀 WATCH. The winning action was: "
+    message += `${votes[0].position}. ${votes[0].description} (${votes[0].votes} votes)`
     client.say(target, message)
+    votes = [];
   }
+
+  // const newRound = () => {}
 
   // Called every time a message comes in
   function onMessageHandler(target, context, msg, self) {
@@ -98,7 +117,20 @@ const bot = async () => {
     const command = msg.trim().split(" ")[0]
     const content = msg.trim().split(" ").splice(1).join(" ")
     switch (command) {
-      case '!suggest':
+      // shorten these to 1 letter
+      case '!play':
+        beginRound()
+        break;
+      case '!vote':
+        beginVoting()
+        break;
+      case '!watch':
+        endAndRankVotes()
+        break;
+      case '!time':
+        client.say(target, "⏰ You have 10 seconds!")
+        break;
+      case '!go':
         const suggestion = {}
         const user = context['display-name']
         suggestion['user'] = user
@@ -107,7 +139,7 @@ const bot = async () => {
         client.whisper(user, `Got it! Thanks ${user}`)
         console.log(suggestions)
         break;
-      case '!vote':
+      case '!do':
         if (content === '1') votes[0].votes += 1;
         if (content === '2') votes[1].votes += 1;
         if (content === '3') votes[2].votes += 1;
@@ -125,14 +157,14 @@ const bot = async () => {
   }
 
   // Set timers for gameplay. Start a new round every 30s.
-  beginRound()
-  const beginRoundTimer = setInterval(beginRound, 30000)
-  const beginVoteTimer = setTimeout(function() {
-    setInterval(beginVoting, 30000)
-  }, 10000)
-  const beginRankTimer = setTimeout(function() {
-    setInterval(endAndRankVotes, 30000)
-  }, 20000)
+  // beginRound()
+  // const beginRoundTimer = setInterval(beginRound, 30000)
+  // const beginVoteTimer = setTimeout(function() {
+  //   setInterval(beginVoting, 30000)
+  // }, 10000)
+  // const beginRankTimer = setTimeout(function() {
+  //   setInterval(endAndRankVotes, 30000)
+  // }, 20000)
 }
 
 const playmemc = bot();
