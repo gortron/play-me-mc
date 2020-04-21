@@ -9,7 +9,7 @@ const bot = async () => {
       username: process.env.BOT_USERNAME,
       password: process.env.OAUTH_TOKEN,
     },
-    channels: [process.env.CHANNEL_NAME],
+    channels: ["ironchefgortron"],
   };
   const target = opts.channels[0];
   const moderator = "ironchefgortron";
@@ -30,19 +30,19 @@ const bot = async () => {
   let suggestions = [];
   let votes = [];
 
-  const reset = () => {
+  const reset = (setPhase = null) => {
     console.log("Resetting...");
-    phase = null;
+    phase = setPhase;
     suggestions = [];
     votes = [];
-    client.say(target, "✅ Reset!");
+    if (!phase) client.say(target, "🤖 Reset!");
   };
 
   const beginPlay = () => {
-    phase = "play";
     console.log("Starting new round...");
     try {
-      suggestions = [];
+      phase = "play";
+      reset(phase);
       client.say(
         target,
         "✏️ PLAY. Suggest Wyatt's next action by typing '!go' first."
@@ -65,20 +65,20 @@ const bot = async () => {
       first["votes"] = 0;
       first["position"] = 1;
       last["votes"] = 0;
-      last["position"] = 3;
+      last["position"] = 2;
       votes = [first, last];
       if (suggestions.length) {
         const randomIndex = Math.floor(Math.random() * suggestions.length);
         random = suggestions[randomIndex];
         random["votes"] = 0;
-        random["position"] = 2;
+        random["position"] = 3;
         votes.push(random);
       }
       let message =
-        "✅ VOTE. Choose which action you want Wyatt to do by typing '!do' then the number.";
-      message += `---1️⃣: ${first.description}---`;
-      message += `2️⃣: ${last.description}---`;
-      if (random) message += `3️⃣: ${random.description}`;
+        "👍🏼 VOTE. Choose which action you want Wyatt to do by typing '!do' then the number";
+      message += `___1️⃣ ${first.description}___`;
+      message += `2️⃣ ${last.description}___`;
+      if (random) message += `3️⃣ ${random.description}`;
       client.say(target, message);
       suggestions = [];
     } catch (error) {
@@ -102,6 +102,9 @@ const bot = async () => {
 
   const suggest = (context, content) => {
     if (phase === "play") {
+      if (!content) {
+        return client.say(target, "⚠️ Suggestions need words!");
+      }
       const suggestion = {};
       const user = context["display-name"];
       suggestion["user"] = user;
@@ -116,18 +119,22 @@ const bot = async () => {
   };
 
   const vote = (content) => {
-    if (phase === "vote") {
-      if (!["1", "2", "3"].includes(content)) {
-        return client.say(target, "⚠️ That isn't an option!");
+    try {
+      if (phase === "vote") {
+        if (!["1", "2", "3"].includes(content)) {
+          return client.say(target, "⚠️ That isn't an option!");
+        }
+        if (content === "1") votes[0].votes += 1;
+        if (content === "2") votes[1].votes += 1;
+        if (content === "3") votes[2].votes += 1;
+        client.say(target, "✅");
+      } else {
+        client.say(target, "⚠️ It isn't time to vote!");
       }
-      if (content === "1") votes[0].votes += 1;
-      if (content === "2") votes[1].votes += 1;
-      if (content === "3") votes[2].votes += 1;
-      client.say(target, "✅");
-    } else {
-      client.say(target, "⚠️ It isn't time to vote!");
+      console.log(votes);
+    } catch (error) {
+      console.log(error);
     }
-    console.log(votes);
   };
 
   const executeIfMod = (context, callback) => {
