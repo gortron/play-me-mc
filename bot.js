@@ -35,6 +35,7 @@ const bot = async () => {
     phase = null;
     suggestions = [];
     votes = [];
+    client.say(target, "✅ Reset!");
   };
 
   const beginPlay = () => {
@@ -106,23 +107,36 @@ const bot = async () => {
       suggestion["user"] = user;
       suggestion["description"] = content;
       suggestions.push(suggestion);
-      client.whisper(user, `Got it! Thanks ${user}`);
+      client.say(target, "✅");
+      // client.whisper(user, `Got it! Thanks ${user}`);
+    } else {
+      client.say(target, "⚠️ It isn't time to suggest!");
     }
     console.log(suggestions);
   };
 
   const vote = (content) => {
     if (phase === "vote") {
+      if (!["1", "2", "3"].includes(content)) {
+        return client.say(target, "⚠️ That isn't an option!");
+      }
       if (content === "1") votes[0].votes += 1;
       if (content === "2") votes[1].votes += 1;
       if (content === "3") votes[2].votes += 1;
+      client.say(target, "✅");
+    } else {
+      client.say(target, "⚠️ It isn't time to vote!");
     }
     console.log(votes);
   };
 
-  executeIfMod = (context, callback) => {
-    if (context["display-name"] === moderator) callback();
-    else client.say(target, "🔐 Only moderator can do that.");
+  const executeIfMod = (context, callback) => {
+    console.log(moderator, context["display-name"]);
+    if (context["display-name"] === moderator) {
+      callback();
+    } else {
+      client.say(target, "🔐 Only moderator can do that.");
+    }
   };
 
   // Called every time a message comes in
