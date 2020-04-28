@@ -9,7 +9,7 @@ const bot = async () => {
       username: process.env.BOT_USERNAME,
       password: process.env.OAUTH_TOKEN,
     },
-    channels: ["ironchefgortron"],
+    channels: ["wynoodle"],
   };
   const target = opts.channels[0];
   const moderator = "ironchefgortron";
